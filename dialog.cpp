@@ -251,16 +251,22 @@ void Dialog::on_toolButton_3_clicked()
     QTextStream out(&fileout);
     fileout.open(QFile::WriteOnly | QFile::Text);
 
+    modelotoatt->clear();
     modelotoatt->setHorizontalHeaderLabels(nomdxatt);
     foreach(auto n, nomdxatt) out << n << "\t";
 
-    int numTasks = 100;
+    int numTasks = dattofut.count();
     QProgressDialog progress("Interpolacion de futuros en progreso...", "Cancel", 0, numTasks, this);
-    progress.setWindowModality(Qt::WindowModal);
+    progress.setModal(true);
+
 
     glp_term_out(GLP_OFF);
 
     for(int f =0; f < dattofut.count(); f++ ){
+        progress.setValue(f);
+        qApp->processEvents();
+        if (progress.wasCanceled())      break;
+
         for(int i = 1 ; i <= n ; i++)
             glp_set_row_bnds(lp, i, GLP_FX, dattofut.at(f).at(i-1), dattofut.at(f).at(i-1)); // prueba para el segundo
 
@@ -295,8 +301,7 @@ void Dialog::on_toolButton_3_clicked()
 
         out << QString((glp_get_status(lp) ==4) ? "*":"");
         dattoatt.append(toatttemp);
-        progress.setValue(f/dattofut.count()*numTasks);
-        if (progress.wasCanceled())      break;
+
        }
     progress.setValue(numTasks);
     glp_delete_prob(lp);
