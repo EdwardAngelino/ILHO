@@ -6,6 +6,7 @@
 #include <QDebug>
 #include "glpk.h"
 #include <QProgressDialog>
+#include <QMessageBox>
 
 
 Dialog::Dialog(QWidget *parent)
@@ -179,15 +180,15 @@ void Dialog::on_toolButton_3_clicked()
 {
     //calcular
 
-    qDebug() << "numero de incert : " << datdxunc.at(0).count() << datdxunc.count() << "registros";
-    qDebug() << "numero de atributos : " << datdxatt.at(0).count() << datdxatt.count() << "registros";
-    qDebug() << "numero de futuros : " << dattofut.at(0).count() << dattofut.count() << "registros";
+    //qDebug() << "numero de incert : " << datdxunc.at(0).count() << datdxunc.count() << "registros";
+    //qDebug() << "numero de atributos : " << datdxatt.at(0).count() << datdxatt.count() << "registros";
+    //qDebug() << "numero de futuros : " << dattofut.at(0).count() << dattofut.count() << "registros";
 
     glp_prob *lp;
     // (n+1) x m : n = numero de incertidumbres , m = numero de nodos.
     int m = datdxunc.count();
     int n = datdxunc.at(0).count();
-    int tot = (1+n)*m+1; //joder si que faltaba 1
+    int tot = (1+n)*m+1; //si que faltaba 1
 
     //qDebug() << m << n << tot;
 
@@ -196,7 +197,6 @@ void Dialog::on_toolButton_3_clicked()
     double ar[tot], z, x[m];
 
   //lectura de la matriz para el problema
-
 
   for(int i = 1,k=1 ; i <= m; i++)
         for(int j = 1 ; j <= n; j++){
@@ -243,9 +243,7 @@ void Dialog::on_toolButton_3_clicked()
 
     glp_load_matrix(lp, (1+n)*m , ii, jj, ar); //se puede subir antes
 
-    int pr=1;
     dattoatt.clear();
-
 
     QFile fileout(ui->nomtoatt->text());
     QTextStream out(&fileout);
@@ -255,32 +253,34 @@ void Dialog::on_toolButton_3_clicked()
     modelotoatt->setHorizontalHeaderLabels(nomdxatt);
     foreach(auto n, nomdxatt) out << n << "\t";
 
-    int numTasks = dattofut.count();
-    QProgressDialog progress("Interpolacion de futuros en progreso...", "Cancel", 0, numTasks, this);
-    progress.setModal(true);
+    //int numTasks = dattofut.count();
+    //QProgressDialog progress("Interpolacion de futuros en progreso...", "Cancel", 0, numTasks, this);
+    //progress.setModal(true);
 
 
     glp_term_out(GLP_OFF);
+    int ninfeas=0;
 
     for(int f =0; f < dattofut.count(); f++ ){
-        progress.setValue(f);
-        qApp->processEvents();
-        if (progress.wasCanceled())      break;
+       // progress.setValue(f);
+       // qApp->processEvents();
+       // if (progress.wasCanceled())      break;
 
         for(int i = 1 ; i <= n ; i++)
-            glp_set_row_bnds(lp, i, GLP_FX, dattofut.at(f).at(i-1), dattofut.at(f).at(i-1)); // prueba para el segundo
+            glp_set_row_bnds(lp, i, GLP_FX, dattofut.at(f).at(i-1), dattofut.at(f).at(i-1)); // cambia los hi para cada incertidumbre
 
         out << "\n";
 
         QVector<double> toatttemp;
         for(int t=0 ; t < datdxatt.at(0).count() ; t++ ){
              for(int i = 1 ; i <= m ; i++)
-                    glp_set_obj_coef(lp, i, datdxatt.at(i-1).at(t));  // para el primero
+                    glp_set_obj_coef(lp, i, datdxatt.at(i-1).at(t));  // cambia coeficientes para cada nodo
 
               glp_simplex(lp, NULL);
               z = glp_get_obj_val(lp);  // valor para TOATT de el futuro evaluado y atributo
 
               out << z << "\t";
+
             /*
               qDebug() << "Valor objetivo(att=" << t+1 << ",fut=" << f+1 <<  ") =" << z << glp_get_status(lp); //4 es infeasible
               qDebug() << "x1"  << glp_get_col_prim(lp, 1);
@@ -288,6 +288,7 @@ void Dialog::on_toolButton_3_clicked()
               qDebug() << "x3"  << glp_get_col_prim(lp, 3);
               qDebug() << "x4"  << glp_get_col_prim(lp, 4);
             */
+              //escribir en la tabla
               QString celltemp = QString::number(z,'f',2) + QString((glp_get_status(lp) ==4) ? " *":"  ");
               QStandardItem *item = new QStandardItem(celltemp);
               item->setTextAlignment(Qt::AlignRight);
@@ -300,9 +301,21 @@ void Dialog::on_toolButton_3_clicked()
           }
 
         out << QString((glp_get_status(lp) ==4) ? "*":"");
+        ninfeas += (glp_get_status(lp) == 4) ? 1:0;
         dattoatt.append(toatttemp);
 
        }
-    progress.setValue(numTasks);
+//    progress.setValue(numTasks);
     glp_delete_prob(lp);
+
+    QString repo="Numero de Incertidumbres : " + QString::number(datdxunc.at(0).count())+"\n";
+    repo = repo + "Numero de atributos : " + QString::number(datdxatt.at(0).count())+"\n";
+    repo = repo + "Numero de nodos : " + QString::number(datdxatt.count())+"\n";
+    repo = repo + "Numero de futuros : " + QString::number(dattofut.count())+"\n";
+    repo = repo + "(*) " + QString::number(ninfeas)+" futuros infactibles";
+
+    QMessageBox::information(this, tr("ILHO"),
+                            tr("Interpolaciones completas\n\n%1").arg(repo));
+
 }
+
