@@ -6,6 +6,7 @@
 #include <QDebug>
 #include "glpk.h"
 #include <QProgressDialog>
+#include <QMessageBox>
 
 
 Dialog::Dialog(QWidget *parent)
@@ -261,6 +262,7 @@ void Dialog::on_toolButton_3_clicked()
 
 
     glp_term_out(GLP_OFF);
+    int ninfeas=0;
 
     for(int f =0; f < dattofut.count(); f++ ){
         progress.setValue(f);
@@ -300,9 +302,21 @@ void Dialog::on_toolButton_3_clicked()
           }
 
         out << QString((glp_get_status(lp) ==4) ? "*":"");
+        ninfeas += (glp_get_status(lp) == 4) ? 1:0;
         dattoatt.append(toatttemp);
 
        }
     progress.setValue(numTasks);
     glp_delete_prob(lp);
+
+    QString repo="Numero de Incertidumbres : " + QString::number(datdxunc.at(0).count())+"\n";
+    repo = repo + "Numero de atributos : " + QString::number(datdxatt.at(0).count())+"\n";
+    repo = repo + "Numero de nodos : " + QString::number(datdxatt.count())+"\n";
+    repo = repo + "Numero de futuros : " + QString::number(dattofut.count())+"\n";
+    repo = repo + "(*) " + QString::number(ninfeas)+" futuros infactibles";
+
+    QMessageBox::information(this, tr("ILHO"),
+                            tr("Interpolaciones completas\n\n%1").arg(repo));
+
 }
+
