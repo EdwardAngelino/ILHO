@@ -23,6 +23,10 @@ FORMS += \
 
 #LIBS += "/Applications/CPLEX_Studio1210/cplex/lib/x86-64_osx/static_pic/lib/libcplex.a"
 
+RC_ICONS = ilho.ico
+macx-clang {
+    ICON = ilho.icns
+}
 
 
 # Default rules for deployment.
