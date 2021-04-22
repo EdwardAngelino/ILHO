@@ -58,7 +58,7 @@ void scatterDialog::graficar(QVector<QVector<double> > datnod, QVector<QVector<d
     ui->customPlot->addGraph();
     ui->customPlot->graph()->setPen(pen);
     ui->customPlot->graph()->setLineStyle(QCPGraph::lsNone);
-    ui->customPlot->graph()->setScatterStyle(QCPScatterStyle(QCPScatterStyle::ssCircle, 5));
+    ui->customPlot->graph()->setScatterStyle(QCPScatterStyle(QCPScatterStyle::ssDisc, 6));
     ui->customPlot->graph()->setName(cad2);
 
     // generate data:
@@ -79,7 +79,7 @@ void scatterDialog::graficar(QVector<QVector<double> > datnod, QVector<QVector<d
       ui->customPlot->graph()->setName(cad);
       ui->customPlot->graph()->setPen(pen2);
       ui->customPlot->graph()->setLineStyle(QCPGraph::lsNone);
-      ui->customPlot->graph()->setScatterStyle(QCPScatterStyle(QCPScatterStyle::ssDiamond, 3));
+      ui->customPlot->graph()->setScatterStyle(QCPScatterStyle(QCPScatterStyle::ssCircle, 5));
 
        QVector<double> xx(nfut), yy(nfut);
       // generate data:
