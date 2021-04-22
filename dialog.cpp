@@ -7,6 +7,8 @@
 #include "glpk.h"
 #include <QProgressDialog>
 #include <QMessageBox>
+//#include "scatterform.h"
+#include "scatterdialog.h"
 
 
 Dialog::Dialog(QWidget *parent)
@@ -261,6 +263,8 @@ void Dialog::on_toolButton_3_clicked()
     glp_term_out(GLP_OFF);
     int ninfeas=0;
 
+    QApplication::setOverrideCursor(Qt::WaitCursor);
+
     for(int f =0; f < dattofut.count(); f++ ){
        // progress.setValue(f);
        // qApp->processEvents();
@@ -306,7 +310,9 @@ void Dialog::on_toolButton_3_clicked()
 
        }
 //    progress.setValue(numTasks);
+
     glp_delete_prob(lp);
+    QApplication::restoreOverrideCursor();
 
     QString repo="Numero de Incertidumbres : " + QString::number(datdxunc.at(0).count())+"\n";
     repo = repo + "Numero de atributos : " + QString::number(datdxatt.at(0).count())+"\n";
@@ -319,3 +325,14 @@ void Dialog::on_toolButton_3_clicked()
 
 }
 
+
+void Dialog::on_toolButton_5_clicked()
+{
+    //graficar scatter
+    mScaterForm = new scatterDialog(this);
+    mScaterForm->setWindowModality(Qt::WindowModal);
+    //mScaterForm->setAttribute(Qt::WA_ShowModal,true);
+
+    mScaterForm->showNormal();
+
+}

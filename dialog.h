@@ -40,6 +40,8 @@ public:
     bool leidoatt;
     bool leidofut;
 
+    QWidget *mScaterForm;
+
 private slots:
     void on_toolButton_3_clicked();
 
@@ -54,6 +56,8 @@ private slots:
     void onDataChangedatt(const QModelIndex& topLeft, const QModelIndex& bottomRight);
 
     void onDataChangedtofut(const QModelIndex& topLeft, const QModelIndex& bottomRight);
+
+    void on_toolButton_5_clicked();
 
 private:
     Ui::Dialog *ui;

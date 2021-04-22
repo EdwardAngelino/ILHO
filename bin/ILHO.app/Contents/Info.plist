@@ -5,7 +5,7 @@
 	<key>CFBundleExecutable</key>
 	<string>ILHO</string>
 	<key>CFBundleIconFile</key>
-	<string></string>
+	<string>ilho.icns</string>
 	<key>CFBundleIdentifier</key>
 	<string>Edward.ILHO</string>
 	<key>CFBundlePackageType</key>
