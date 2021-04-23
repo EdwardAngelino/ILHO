@@ -35,6 +35,10 @@ private slots:
 
     void on_checkBox_clicked();
 
+    void mouseMove1(QMouseEvent *e);
+
+    void mousePress();
+
 private:
     Ui::scatterDialog *ui;
 };

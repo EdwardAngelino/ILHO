@@ -20,6 +20,8 @@ scatterDialog::scatterDialog(QWidget *parent) :
     ui->cmb_X->clear(); ui->cmb_Y->clear();
     on_cmbopc_currentIndexChanged(0);
 
+    connect(ui->customPlot, SIGNAL(mouseMove(QMouseEvent*)), this, SLOT(mouseMove1(QMouseEvent*)));
+
 }
 
 scatterDialog::~scatterDialog()
@@ -54,7 +56,7 @@ void scatterDialog::graficar(QVector<QVector<double> > datnod, QVector<QVector<d
 
     // graficar los nodos
     QPen pen;
-    pen.setColor(QColor(255, 0, 0, 127));
+    pen.setColor(QColor(255, 0, 0, 127)); //rojo
     ui->customPlot->addGraph();
     ui->customPlot->graph()->setPen(pen);
     ui->customPlot->graph()->setLineStyle(QCPGraph::lsNone);
@@ -74,7 +76,7 @@ void scatterDialog::graficar(QVector<QVector<double> > datnod, QVector<QVector<d
       // graficar futuros
     if( ui->checkBox->isChecked()){
       QPen pen2;
-      pen2.setColor(QColor(0, 0, 255, 127));
+      pen2.setColor(QColor(105, 105, 105, 127));  // gray
       ui->customPlot->addGraph();
       ui->customPlot->graph()->setName(cad);
       ui->customPlot->graph()->setPen(pen2);
@@ -109,7 +111,10 @@ void scatterDialog::graficar(QVector<QVector<double> > datnod, QVector<QVector<d
 
       ui->customPlot->replot();
 
-
+      // adicionar la funcionalidad
+       ui->customPlot->setInteractions(QCP::iRangeDrag | QCP::iRangeZoom | QCP::iSelectAxes |
+                                       QCP::iSelectLegend | QCP::iSelectPlottables);
+       connect(ui->customPlot, SIGNAL(mousePress(QMouseEvent*)), this, SLOT(mousePress()));
 
 }
 
@@ -156,5 +161,27 @@ void scatterDialog::on_checkBox_stateChanged(int arg1)
 
 void scatterDialog::on_checkBox_clicked()
 {
-    qDebug() << ui->checkBox->isChecked();
+    //qDebug() << ui->checkBox->isChecked();
 }
+
+void scatterDialog::mouseMove1(QMouseEvent *e)
+{
+    double x = ui->customPlot->xAxis->pixelToCoord(e->pos().x());
+    double y = ui->customPlot->yAxis->pixelToCoord(e->pos().y());
+   // qDebug() << x << y ;
+    QString tmp = "("+QString::number(x)+","+QString::number(y)+")";
+    ui->l_cord->setText(tmp);
+
+}
+
+
+void scatterDialog::mousePress()
+{
+    if (ui->customPlot->xAxis->selectedParts().testFlag(QCPAxis::spAxis))
+      ui->customPlot->axisRect()->setRangeDrag(ui->customPlot->xAxis->orientation());
+    else if (ui->customPlot->yAxis->selectedParts().testFlag(QCPAxis::spAxis))
+      ui->customPlot->axisRect()->setRangeDrag(ui->customPlot->yAxis->orientation());
+    else
+        ui->customPlot->axisRect()->setRangeDrag(Qt::Horizontal|Qt::Vertical);
+}
+
